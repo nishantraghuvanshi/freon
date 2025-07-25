@@ -13,7 +13,12 @@
       ],
       "type": "assets",
       "workspace": "freon_frontend"
-    }
+    },
+    "internet_identity": {
+    "type": "custom",
+    "candid": "internet_identity.did",
+    "wasm": "internet_identity_dev.wasm.gz"
+  }
   },
   "defaults": {
     "build": {
