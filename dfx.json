@@ -1,0 +1,26 @@
+{
+  "canisters": {
+    "freon_backend": {
+      "main": "src/freon_backend/main.mo",
+      "type": "motoko"
+    },
+    "freon_frontend": {
+      "dependencies": [
+        "freon_backend"
+      ],
+      "source": [
+        "src/freon_frontend/dist"
+      ],
+      "type": "assets",
+      "workspace": "freon_frontend"
+    }
+  },
+  "defaults": {
+    "build": {
+      "args": "",
+      "packtool": ""
+    }
+  },
+  "output_env_file": ".env",
+  "version": 1
+}
