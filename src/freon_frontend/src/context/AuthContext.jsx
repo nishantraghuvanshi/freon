@@ -145,6 +145,76 @@ export function AuthProvider({ children }) {
     }
   }
 
+  // Follow a user
+  async function followUser(targetPrincipal) {
+    if (!principal) throw new Error('Not authenticated');
+    
+    setError('');
+    try {
+      const callerPrincipal = Principal.fromText(principal.toText());
+      const targetPrincipalObj = Principal.fromText(targetPrincipal.toText());
+      const ok = await freon_backend.follow(callerPrincipal, targetPrincipalObj);
+      return ok;
+    } catch (e) {
+      setError('Failed to follow user.');
+      return false;
+    }
+  }
+
+  // Unfollow a user
+  async function unfollowUser(targetPrincipal) {
+    if (!principal) throw new Error('Not authenticated');
+    
+    setError('');
+    try {
+      const callerPrincipal = Principal.fromText(principal.toText());
+      const targetPrincipalObj = Principal.fromText(targetPrincipal.toText());
+      const ok = await freon_backend.unfollow(callerPrincipal, targetPrincipalObj);
+      return ok;
+    } catch (e) {
+      setError('Failed to unfollow user.');
+      return false;
+    }
+  }
+
+  // Get following list
+  async function getFollowing(userPrincipal) {
+    try {
+      const principalObj = Principal.fromText(userPrincipal.toText());
+      const following = await freon_backend.get_following(principalObj);
+      return following;
+    } catch (e) {
+      setError('Failed to get following list.');
+      return [];
+    }
+  }
+
+  // Get followers list
+  async function getFollowers(userPrincipal) {
+    try {
+      const principalObj = Principal.fromText(userPrincipal.toText());
+      const followers = await freon_backend.get_followers(principalObj);
+      return followers;
+    } catch (e) {
+      setError('Failed to get followers list.');
+      return [];
+    }
+  }
+
+  // Get personalized feed
+  async function getPersonalizedFeed() {
+    if (!principal) return [];
+    
+    try {
+      const principalObj = Principal.fromText(principal.toText());
+      const feed = await freon_backend.get_feed(principalObj);
+      return feed;
+    } catch (e) {
+      setError('Failed to get personalized feed.');
+      return [];
+    }
+  }
+
   const value = {
     authClient,
     principal,
@@ -157,6 +227,11 @@ export function AuthProvider({ children }) {
     register,
     updateProfile,
     refreshProfile,
+    followUser,
+    unfollowUser,
+    getFollowing,
+    getFollowers,
+    getPersonalizedFeed,
     isAuthenticated: !!principal,
     hasProfile: !!profile
   };

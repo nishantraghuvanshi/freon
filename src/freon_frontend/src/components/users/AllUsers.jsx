@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { freon_backend } from 'declarations/freon_backend';
 import { useAuth } from '../../context/AuthContext';
 import LoadingSpinner from '../common/LoadingSpinner';
+import FollowButton from '../common/FollowButton';
 
 export default function AllUsers() {
   const { error, setError, principal } = useAuth();
@@ -227,7 +228,6 @@ export default function AllUsers() {
             <div
               key={userPrincipal.toText()}
               style={userCardStyle}
-              onClick={() => handleViewUser(userPrincipal)}
               onMouseEnter={e => {
                 Object.assign(e.target.style, userCardHoverStyle);
               }}
@@ -235,21 +235,33 @@ export default function AllUsers() {
                 Object.assign(e.target.style, userCardStyle);
               }}
             >
-              <div style={userHeaderStyle}>
+              <div 
+                onClick={() => handleViewUser(userPrincipal)}
+                style={{...userHeaderStyle, cursor: 'pointer'}}
+              >
                 <img 
                   src={userProfile.image_url || '/logo2.svg'} 
                   alt={userProfile.username}
                   style={avatarStyle}
                 />
-                <div>
+                <div style={{flex: 1}}>
                   <div style={usernameStyle}>{userProfile.username}</div>
                   <div style={principalStyle}>
                     {userPrincipal.toText().slice(0, 20)}...
                   </div>
                 </div>
               </div>
-              <div style={bioStyle}>
+              <div 
+                onClick={() => handleViewUser(userPrincipal)}
+                style={{...bioStyle, cursor: 'pointer'}}
+              >
                 {userProfile.bio || 'No bio available'}
+              </div>
+              <div style={{marginTop: '1rem', display: 'flex', justifyContent: 'flex-end'}}>
+                <FollowButton 
+                  targetPrincipal={userPrincipal} 
+                  targetUsername={userProfile.username}
+                />
               </div>
             </div>
           ))}

@@ -1,9 +1,29 @@
+import { useState, useEffect } from 'react';
 import { Link, Outlet, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 
 export default function UserPage() {
-  const { profile } = useAuth();
+  const { profile, principal, getFollowing, getFollowers } = useAuth();
   const location = useLocation();
+  const [followingCount, setFollowingCount] = useState(0);
+  const [followersCount, setFollowersCount] = useState(0);
+
+  useEffect(() => {
+    if (principal) {
+      fetchSocialStats();
+    }
+  }, [principal]);
+
+  async function fetchSocialStats() {
+    try {
+      const following = await getFollowing(principal);
+      const followers = await getFollowers(principal);
+      setFollowingCount(following.length);
+      setFollowersCount(followers.length);
+    } catch (e) {
+      console.error('Error fetching social stats:', e);
+    }
+  }
 
   const containerStyle = {
     maxWidth: '800px',
@@ -50,6 +70,29 @@ export default function UserPage() {
     display: 'inline-block'
   };
 
+  const socialStatsStyle = {
+    display: 'flex',
+    justifyContent: 'center',
+    gap: '2rem',
+    marginTop: '1rem',
+    marginBottom: '1rem'
+  };
+
+  const statStyle = {
+    textAlign: 'center'
+  };
+
+  const statNumberStyle = {
+    fontSize: '1.5rem',
+    fontWeight: 'bold',
+    color: '#007bff'
+  };
+
+  const statLabelStyle = {
+    fontSize: '0.875rem',
+    color: '#6c757d'
+  };
+
   const navStyle = {
     display: 'flex',
     justifyContent: 'center',
@@ -93,6 +136,17 @@ export default function UserPage() {
             <span style={principalStyle}>
               ID: {profile?.username || 'Loading...'}
             </span>
+            
+            <div style={socialStatsStyle}>
+              <div style={statStyle}>
+                <div style={statNumberStyle}>{followingCount}</div>
+                <div style={statLabelStyle}>Following</div>
+              </div>
+              <div style={statStyle}>
+                <div style={statNumberStyle}>{followersCount}</div>
+                <div style={statLabelStyle}>Followers</div>
+              </div>
+            </div>
           </div>
 
           <nav style={navStyle}>

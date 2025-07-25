@@ -62,7 +62,7 @@ export default function LoginPage() {
         onMouseOver={(e) => e.target.style.backgroundColor = '#0056b3'}
         onMouseOut={(e) => e.target.style.backgroundColor = '#007bff'}
       >
-        Login with Internet Identity
+        Login with Internet Identity!
       </button>
     </div>
   );

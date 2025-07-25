@@ -5,6 +5,7 @@ import { Principal } from '@dfinity/principal';
 import { useAuth } from '../../context/AuthContext';
 import PostCard from '../common/PostCard';
 import LoadingSpinner from '../common/LoadingSpinner';
+import FollowButton from '../common/FollowButton';
 
 export default function ProfileView() {
   const { userId } = useParams();
@@ -187,6 +188,12 @@ export default function ProfileView() {
         <span style={principalStyle}>
           ID: {vPrincipal.toText()}
         </span>
+        <div style={{marginTop: '1rem'}}>
+          <FollowButton 
+            targetPrincipal={vPrincipal} 
+            targetUsername={vProfile.username}
+          />
+        </div>
       </div>
 
       <div style={buttonGroupStyle}>

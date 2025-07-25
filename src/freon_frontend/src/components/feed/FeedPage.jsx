@@ -8,15 +8,18 @@ import LoadingSpinner from '../common/LoadingSpinner';
 import { useAuth } from '../../context/AuthContext';
 
 export default function FeedPage() {
-  const { error, setError } = useAuth();
+  const { error, setError, getPersonalizedFeed } = useAuth();
   const navigate = useNavigate();
   const [allPosts, setAllPosts] = useState([]);
+  const [personalizedPosts, setPersonalizedPosts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [allUsers, setAllUsers] = useState([]);
+  const [feedType, setFeedType] = useState('global'); // 'global' or 'personal'
 
   useEffect(() => {
     fetchAllPosts();
     fetchAllUsers();
+    fetchPersonalizedFeed();
   }, []);
 
   // Fetch all posts from all users
@@ -32,6 +35,18 @@ export default function FeedPage() {
       setError('Failed to fetch posts.');
     }
     setLoading(false);
+  }
+
+  // Fetch personalized feed
+  async function fetchPersonalizedFeed() {
+    try {
+      const posts = await getPersonalizedFeed();
+      // Sort posts by timestamp (newest first)
+      const sortedPosts = posts.sort((a, b) => Number(b.timestamp) - Number(a.timestamp));
+      setPersonalizedPosts(sortedPosts || []);
+    } catch (e) {
+      console.error('Failed to fetch personalized feed');
+    }
   }
 
   // Fetch all users for author lookup
@@ -56,8 +71,17 @@ export default function FeedPage() {
 
   // Handle post creation success
   function handlePostCreated() {
-    fetchAllPosts(); // Refresh the feed
+    fetchAllPosts(); // Refresh the feeds
+    fetchPersonalizedFeed();
   }
+
+  // Switch feed type
+  function switchFeedType(type) {
+    setFeedType(type);
+  }
+
+  // Get current posts based on feed type
+  const currentPosts = feedType === 'personal' ? personalizedPosts : allPosts;
 
   const containerStyle = {
     maxWidth: '600px',
@@ -95,17 +119,65 @@ export default function FeedPage() {
     color: '#6c757d'
   };
 
+  const feedToggleStyle = {
+    display: 'flex',
+    justifyContent: 'center',
+    marginBottom: '2rem',
+    gap: '0.5rem'
+  };
+
+  const toggleButtonStyle = {
+    padding: '0.5rem 1rem',
+    border: '1px solid #007bff',
+    borderRadius: '4px',
+    cursor: 'pointer',
+    fontSize: '0.9rem',
+    transition: 'all 0.2s'
+  };
+
+  const activeToggleStyle = {
+    ...toggleButtonStyle,
+    backgroundColor: '#007bff',
+    color: 'white'
+  };
+
+  const inactiveToggleStyle = {
+    ...toggleButtonStyle,
+    backgroundColor: 'white',
+    color: '#007bff'
+  };
+
   if (loading) {
-    return <LoadingSpinner message="Loading global feed..." />;
+    return <LoadingSpinner message="Loading feed..." />;
   }
 
   return (
     <div style={containerStyle}>
       <div style={headerStyle}>
-        <h1 style={titleStyle}>Global Feed</h1>
+        <h1 style={titleStyle}>
+          {feedType === 'personal' ? 'Personal Feed' : 'Global Feed'}
+        </h1>
         <p style={subtitleStyle}>
-          Discover what everyone is sharing on Freon
+          {feedType === 'personal' 
+            ? 'Posts from people you follow' 
+            : 'Discover what everyone is sharing on Freon'
+          }
         </p>
+      </div>
+
+      <div style={feedToggleStyle}>
+        <button
+          onClick={() => switchFeedType('global')}
+          style={feedType === 'global' ? activeToggleStyle : inactiveToggleStyle}
+        >
+          Global Feed ({allPosts.length})
+        </button>
+        <button
+          onClick={() => switchFeedType('personal')}
+          style={feedType === 'personal' ? activeToggleStyle : inactiveToggleStyle}
+        >
+          Personal Feed ({personalizedPosts.length})
+        </button>
       </div>
 
       <CreatePost onPostCreated={handlePostCreated} />
@@ -117,17 +189,24 @@ export default function FeedPage() {
       )}
 
       <div style={{ marginTop: '2rem' }}>
-        {allPosts.length === 0 ? (
+        {currentPosts.length === 0 ? (
           <div style={emptyStateStyle}>
-            <h3>No posts yet</h3>
-            <p>Be the first to share something with the community!</p>
+            <h3>
+              {feedType === 'personal' ? 'No posts in your personal feed' : 'No posts yet'}
+            </h3>
+            <p>
+              {feedType === 'personal' 
+                ? 'Follow some users to see their posts here, or switch to the Global Feed to discover content.'
+                : 'Be the first to share something with the community!'
+              }
+            </p>
           </div>
         ) : (
           <>
             <h3 style={{ marginBottom: '1rem', color: '#495057' }}>
-              Latest Posts ({allPosts.length})
+              {feedType === 'personal' ? 'From People You Follow' : 'Latest Posts'} ({currentPosts.length})
             </h3>
-            {allPosts.map((post) => (
+            {currentPosts.map((post) => (
               <PostCard 
                 key={post.id} 
                 post={post} 
