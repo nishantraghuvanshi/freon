@@ -1,11 +1,14 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { FiPlus, FiGlobe, FiUsers } from 'react-icons/fi';
 import { freon_backend } from 'declarations/freon_backend';
 import { Principal } from '@dfinity/principal';
 import PostCard from '../common/PostCard';
-import CreatePost from './CreatePost';
 import LoadingSpinner from '../common/LoadingSpinner';
+import Button from '../ui/Button';
+import Card from '../ui/Card';
 import { useAuth } from '../../context/AuthContext';
+import { theme } from '../../styles/theme';
 
 export default function FeedPage() {
   const { error, setError, getPersonalizedFeed } = useAuth();
@@ -69,11 +72,21 @@ export default function FeedPage() {
     }
   }
 
-  // Handle post creation success
-  function handlePostCreated() {
-    fetchAllPosts(); // Refresh the feeds
-    fetchPersonalizedFeed();
-  }
+  // Refresh feeds when component mounts or when returning from create post
+  useEffect(() => {
+    const refreshFeeds = () => {
+      fetchAllPosts();
+      fetchPersonalizedFeed();
+    };
+
+    // Refresh immediately
+    refreshFeeds();
+
+    // Set up interval to refresh periodically
+    const interval = setInterval(refreshFeeds, 30000); // Refresh every 30 seconds
+
+    return () => clearInterval(interval);
+  }, []);
 
   // Switch feed type
   function switchFeedType(type) {
@@ -84,75 +97,122 @@ export default function FeedPage() {
   const currentPosts = feedType === 'personal' ? personalizedPosts : allPosts;
 
   const containerStyle = {
-    maxWidth: '600px',
+    maxWidth: '800px',
     margin: '0 auto',
-    padding: '0 1rem'
+    padding: '1rem',
+    minHeight: '100vh'
   };
 
   const headerStyle = {
     textAlign: 'center',
-    marginBottom: '2rem'
+    marginBottom: '2rem',
+    padding: '1rem'
   };
 
   const titleStyle = {
-    fontSize: '2rem',
-    color: '#007bff',
-    marginBottom: '0.5rem'
+    fontSize: 'clamp(1.75rem, 4vw, 2.5rem)',
+    color: theme.colors.primary[900],
+    marginBottom: '0.5rem',
+    fontFamily: theme.typography.fontFamily.heading,
+    fontWeight: theme.typography.fontWeight.bold
   };
 
   const subtitleStyle = {
-    color: '#6c757d'
+    color: theme.colors.neutral[600],
+    marginBottom: '1.5rem',
+    fontSize: 'clamp(0.9rem, 2vw, 1.1rem)',
+    lineHeight: theme.typography.lineHeight.relaxed
+  };
+
+  const activeToggleStyle = {
+    padding: 'clamp(0.5rem, 2vw, 0.75rem) clamp(1rem, 3vw, 1.5rem)',
+    border: `2px solid ${theme.colors.secondary[500]}`,
+    borderRadius: theme.borderRadius.lg,
+    cursor: 'pointer',
+    fontSize: 'clamp(0.875rem, 2vw, 1rem)',
+    fontWeight: theme.typography.fontWeight.medium,
+    transition: 'all 0.2s ease',
+    display: 'flex',
+    alignItems: 'center',
+    gap: '0.5rem',
+    minWidth: 'fit-content',
+    backgroundColor: theme.colors.secondary[500],
+    color: 'white',
+    boxShadow: theme.shadows.md
+  };
+
+  const inactiveToggleStyle = {
+    padding: 'clamp(0.5rem, 2vw, 0.75rem) clamp(1rem, 3vw, 1.5rem)',
+    border: `2px solid ${theme.colors.secondary[500]}`,
+    borderRadius: theme.borderRadius.lg,
+    cursor: 'pointer',
+    fontSize: 'clamp(0.875rem, 2vw, 1rem)',
+    fontWeight: theme.typography.fontWeight.medium,
+    transition: 'all 0.2s ease',
+    display: 'flex',
+    alignItems: 'center',
+    gap: '0.5rem',
+    minWidth: 'fit-content',
+    backgroundColor: 'white',
+    color: theme.colors.secondary[500]
+  };
+
+  const createPostPromptStyle = {
+    marginBottom: '2rem'
+  };
+
+  const createButtonStyle = {
+    width: '100%',
+    padding: '1.5rem',
+    justifyContent: 'center',
+    fontSize: 'clamp(1rem, 2.5vw, 1.1rem)',
+    gap: '0.75rem'
   };
 
   const errorStyle = {
-    color: '#dc3545',
-    backgroundColor: '#f8d7da',
-    border: '1px solid #f5c6cb',
-    borderRadius: '4px',
-    padding: '0.75rem',
-    marginBottom: '1rem'
+    backgroundColor: theme.colors.error.light,
+    color: 'white',
+    padding: '1rem',
+    borderRadius: theme.borderRadius.lg,
+    marginBottom: '1rem',
+    textAlign: 'center'
   };
 
   const emptyStateStyle = {
     textAlign: 'center',
-    padding: '3rem 1rem',
-    color: '#6c757d'
+    padding: 'clamp(2rem, 5vw, 3rem) 1rem',
+    color: theme.colors.neutral[600]
   };
 
   const feedToggleStyle = {
     display: 'flex',
     justifyContent: 'center',
     marginBottom: '2rem',
-    gap: '0.5rem'
+    gap: '0.75rem',
+    flexWrap: 'wrap',
+    padding: '0 1rem'
   };
 
-  const toggleButtonStyle = {
-    padding: '0.5rem 1rem',
-    border: '1px solid #007bff',
-    borderRadius: '4px',
-    cursor: 'pointer',
-    fontSize: '0.9rem',
-    transition: 'all 0.2s'
+  const postsContainerStyle = {
+    marginTop: '2rem'
   };
 
-  const activeToggleStyle = {
-    ...toggleButtonStyle,
-    backgroundColor: '#007bff',
-    color: 'white'
-  };
-
-  const inactiveToggleStyle = {
-    ...toggleButtonStyle,
-    backgroundColor: 'white',
-    color: '#007bff'
+  const postsHeaderStyle = {
+    marginBottom: '1.5rem',
+    color: theme.colors.neutral[700],
+    fontSize: 'clamp(1.1rem, 2.5vw, 1.25rem)',
+    fontWeight: theme.typography.fontWeight.semibold,
+    padding: '0 0.5rem'
   };
 
   if (loading) {
-    return <LoadingSpinner message="Loading feed..." />;
+    return <LoadingSpinner message="Loading feed..." fullScreen />;
   }
 
   return (
-    <div style={containerStyle}>
+    <div 
+      style={containerStyle}
+    >
       <div style={headerStyle}>
         <h1 style={titleStyle}>
           {feedType === 'personal' ? 'Personal Feed' : 'Global Feed'}
@@ -170,31 +230,48 @@ export default function FeedPage() {
           onClick={() => switchFeedType('global')}
           style={feedType === 'global' ? activeToggleStyle : inactiveToggleStyle}
         >
+          <FiGlobe size={18} />
           Global Feed ({allPosts.length})
         </button>
+        
         <button
           onClick={() => switchFeedType('personal')}
           style={feedType === 'personal' ? activeToggleStyle : inactiveToggleStyle}
         >
+          <FiUsers size={18} />
           Personal Feed ({personalizedPosts.length})
         </button>
       </div>
 
-      <CreatePost onPostCreated={handlePostCreated} />
+      <Card variant="elevated" style={createPostPromptStyle}>
+        <Button
+          variant="primary"
+          size="large"
+          style={createButtonStyle}
+          onClick={() => navigate('/create-post')}
+        >
+          <FiPlus size={20} />
+          Create New Post
+        </Button>
+      </Card>
 
       {error && (
-        <div style={errorStyle}>
+        <div 
+          style={errorStyle}
+        >
           {error}
         </div>
       )}
 
-      <div style={{ marginTop: '2rem' }}>
+      <div style={postsContainerStyle}>
         {currentPosts.length === 0 ? (
-          <div style={emptyStateStyle}>
-            <h3>
+          <div 
+            style={emptyStateStyle}
+          >
+            <h3 style={{ marginBottom: '1rem', fontSize: 'clamp(1.25rem, 3vw, 1.5rem)' }}>
               {feedType === 'personal' ? 'No posts in your personal feed' : 'No posts yet'}
             </h3>
-            <p>
+            <p style={{ fontSize: 'clamp(0.9rem, 2vw, 1rem)', lineHeight: 1.6 }}>
               {feedType === 'personal' 
                 ? 'Follow some users to see their posts here, or switch to the Global Feed to discover content.'
                 : 'Be the first to share something with the community!'
@@ -203,17 +280,26 @@ export default function FeedPage() {
           </div>
         ) : (
           <>
-            <h3 style={{ marginBottom: '1rem', color: '#495057' }}>
+            <h3 style={postsHeaderStyle}>
               {feedType === 'personal' ? 'From People You Follow' : 'Latest Posts'} ({currentPosts.length})
             </h3>
-            {currentPosts.map((post) => (
-              <PostCard 
-                key={post.id} 
-                post={post} 
-                showAuthor={true} 
-                onAuthorClick={handleAuthorClick}
-              />
-            ))}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+              {currentPosts.map((post, index) => (
+                <div
+                  key={post.id}
+                >
+                  <PostCard 
+                    post={post} 
+                    showAuthor={true} 
+                    onAuthorClick={handleAuthorClick}
+                    onUpdate={() => {
+                      fetchAllPosts();
+                      fetchPersonalizedFeed();
+                    }}
+                  />
+                </div>
+              ))}
+            </div>
           </>
         )}
       </div>

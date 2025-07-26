@@ -4,6 +4,7 @@ import { freon_backend } from 'declarations/freon_backend';
 import { useAuth } from '../../context/AuthContext';
 import LoadingSpinner from '../common/LoadingSpinner';
 import FollowButton from '../common/FollowButton';
+import Avatar from '../common/Avatar';
 
 export default function AllUsers() {
   const { error, setError, principal } = useAuth();
@@ -239,12 +240,14 @@ export default function AllUsers() {
                 onClick={() => handleViewUser(userPrincipal)}
                 style={{...userHeaderStyle, cursor: 'pointer'}}
               >
-                <img 
-                  src={userProfile.image_url || '/logo2.svg'} 
-                  alt={userProfile.username}
-                  style={avatarStyle}
+                <Avatar 
+                  src={userProfile.image_url}
+                  alt={`${userProfile.username}'s avatar`}
+                  size={50}
+                  username={userProfile.username}
+                  showPlaceholder={true}
                 />
-                <div style={{flex: 1}}>
+                <div style={{flex: 1, marginLeft: '12px'}}>
                   <div style={usernameStyle}>{userProfile.username}</div>
                   <div style={principalStyle}>
                     {userPrincipal.toText().slice(0, 20)}...

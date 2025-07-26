@@ -6,6 +6,7 @@ import { useAuth } from '../../context/AuthContext';
 import PostCard from '../common/PostCard';
 import LoadingSpinner from '../common/LoadingSpinner';
 import FollowButton from '../common/FollowButton';
+import Avatar from '../common/Avatar';
 
 export default function ProfileView() {
   const { userId } = useParams();
@@ -178,10 +179,12 @@ export default function ProfileView() {
   return (
     <div style={containerStyle}>
       <div style={headerStyle}>
-        <img 
-          src={vProfile.image_url || '/logo2.svg'} 
-          alt={vProfile.username}
-          style={profileImageStyle}
+        <Avatar 
+          src={vProfile.image_url}
+          alt={`${vProfile.username}'s avatar`}
+          size={120}
+          username={vProfile.username}
+          showPlaceholder={true}
         />
         <h1 style={titleStyle}>{vProfile.username}</h1>
         <p style={bioStyle}>{vProfile.bio}</p>
@@ -236,6 +239,7 @@ export default function ProfileView() {
                   key={post.id} 
                   post={post} 
                   showAuthor={false}
+                  onUpdate={fetchUserPosts}
                 />
               ))}
               <button 

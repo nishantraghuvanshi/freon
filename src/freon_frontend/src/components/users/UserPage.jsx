@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link, Outlet, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import Avatar from '../common/Avatar';
 
 export default function UserPage() {
   const { profile, principal, getFollowing, getFollowers } = useAuth();
@@ -126,10 +127,12 @@ export default function UserPage() {
       {isMainProfile && (
         <>
           <div style={headerStyle}>
-            <img 
-              src={profile?.image_url || '/logo2.svg'} 
-              alt="Profile" 
-              style={profileImageStyle}
+            <Avatar 
+              src={profile?.image_url}
+              alt={`${profile?.username}'s avatar`}
+              size={100}
+              username={profile?.username || ''}
+              showPlaceholder={true}
             />
             <h1 style={titleStyle}>{profile?.username}</h1>
             <p style={bioStyle}>{profile?.bio}</p>

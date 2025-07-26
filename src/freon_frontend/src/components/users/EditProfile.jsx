@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import ImageUpload from '../common/ImageUpload';
 
 export default function EditProfile() {
   const { profile, updateProfile, error } = useAuth();
@@ -120,17 +121,12 @@ export default function EditProfile() {
         <p style={subtitleStyle}>Update your profile information</p>
       </div>
 
-      <div style={previewStyle}>
-        <img 
-          src={form.image_url || '/logo2.svg'} 
-          alt="Profile Preview" 
-          width={100} 
-          height={100}
-          style={{ 
-            borderRadius: '50%', 
-            border: '3px solid #007bff',
-            objectFit: 'cover'
-          }}
+      <div style={{ marginBottom: '2rem', textAlign: 'center' }}>
+        <ImageUpload
+          currentImage={form.image_url}
+          onImageChange={(imageUrl) => setForm({ ...form, image_url: imageUrl })}
+          size={100}
+          label="Change Avatar"
         />
       </div>
 
@@ -163,19 +159,6 @@ export default function EditProfile() {
           <small style={{ color: '#6c757d' }}>
             {form.bio.length}/500 characters
           </small>
-        </div>
-
-        <div>
-          <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold' }}>
-            Profile Image URL
-          </label>
-          <input
-            type="url"
-            value={form.image_url}
-            onChange={e => setForm({ ...form, image_url: e.target.value })}
-            style={inputStyle}
-            placeholder="https://example.com/your-image.jpg"
-          />
         </div>
 
         <div style={buttonGroupStyle}>

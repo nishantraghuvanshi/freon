@@ -154,6 +154,7 @@ export default function UserPosts() {
               key={post.id} 
               post={post} 
               showAuthor={false}
+              onUpdate={fetchUserPosts}
             />
           ))}
         </div>

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import ImageUpload from '../common/ImageUpload';
 
 export default function RegisterPage() {
   const { register, error } = useAuth();
@@ -83,13 +84,12 @@ export default function RegisterPage() {
     <div style={containerStyle}>
       <h2 style={titleStyle}>Create Your Profile</h2>
       
-      <div style={previewStyle}>
-        <img 
-          src={form.image_url || '/logo2.svg'} 
-          alt="Profile Preview" 
-          width={80} 
-          height={80}
-          style={{ borderRadius: '50%', border: '2px solid #ddd' }}
+      <div style={{ marginBottom: '2rem' }}>
+        <ImageUpload
+          currentImage={form.image_url}
+          onImageChange={(imageUrl) => setForm({ ...form, image_url: imageUrl })}
+          size={100}
+          label="Upload Avatar"
         />
       </div>
 
@@ -108,14 +108,6 @@ export default function RegisterPage() {
           value={form.bio}
           onChange={e => setForm({ ...form, bio: e.target.value })}
           style={textareaStyle}
-        />
-        
-        <input
-          type="url"
-          placeholder="Profile image URL (optional)"
-          value={form.image_url}
-          onChange={e => setForm({ ...form, image_url: e.target.value })}
-          style={inputStyle}
         />
         
         <button 
