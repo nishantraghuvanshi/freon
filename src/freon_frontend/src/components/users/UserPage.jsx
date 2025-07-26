@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link, Outlet, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import Avatar from '../common/Avatar';
+import CyclesWallet from '../cycles/CyclesWallet';
 
 export default function UserPage() {
   const { profile, principal, getFollowing, getFollowers } = useAuth();
@@ -151,6 +152,8 @@ export default function UserPage() {
               </div>
             </div>
           </div>
+
+          <CyclesWallet />
 
           <nav style={navStyle}>
             <Link 

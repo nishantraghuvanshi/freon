@@ -3,6 +3,7 @@ import { FiHeart } from 'react-icons/fi';
 import { freon_backend } from 'declarations/freon_backend';
 import { Principal } from '@dfinity/principal';
 import { useAuth } from '../../context/AuthContext';
+import CyclesNotification from '../cycles/CyclesNotification';
 import { theme } from '../../styles/theme';
 
 export default function LikeButton({ postId, onLikeChange }) {
@@ -11,6 +12,8 @@ export default function LikeButton({ postId, onLikeChange }) {
   const [isLiked, setIsLiked] = useState(false);
   const [loading, setLoading] = useState(false);
   const [optimisticCount, setOptimisticCount] = useState(0);
+  const [showNotification, setShowNotification] = useState(false);
+  const [notificationData, setNotificationData] = useState({});
 
   useEffect(() => {
     fetchLikes();
@@ -53,6 +56,16 @@ export default function LikeButton({ postId, onLikeChange }) {
         success = await freon_backend.unlike_post(principalObj, postId);
       } else {
         success = await freon_backend.like_post(principalObj, postId);
+        
+        // Show notification when liking a post (cycles earned by post author)
+        if (success && !wasLiked) {
+          setNotificationData({
+            message: "Post author earned cycles!",
+            amount: 5,
+            type: 'earned'
+          });
+          setShowNotification(true);
+        }
       }
 
       if (success) {
@@ -93,32 +106,42 @@ export default function LikeButton({ postId, onLikeChange }) {
   };
 
   return (
-    <button
-      onClick={handleLike}
-      style={buttonStyle}
-      disabled={!principal || loading}
-      onMouseEnter={(e) => {
-        if (!loading && !isLiked) {
-          e.target.style.backgroundColor = theme.colors.neutral[50];
-          e.target.style.borderColor = theme.colors.error.main;
-          e.target.style.color = theme.colors.error.main;
-        }
-      }}
-      onMouseLeave={(e) => {
-        if (!loading && !isLiked) {
-          e.target.style.backgroundColor = 'transparent';
-          e.target.style.borderColor = theme.colors.neutral[300];
-          e.target.style.color = theme.colors.neutral[600];
-        }
-      }}
-    >
-      <div>
-        <FiHeart 
-          size={16} 
-          fill={isLiked ? 'currentColor' : 'none'} 
-        />
-      </div>
-      <span>{optimisticCount}</span>
-    </button>
+    <>
+      <button
+        onClick={handleLike}
+        style={buttonStyle}
+        disabled={!principal || loading}
+        onMouseEnter={(e) => {
+          if (!loading && !isLiked) {
+            e.target.style.backgroundColor = theme.colors.neutral[50];
+            e.target.style.borderColor = theme.colors.error.main;
+            e.target.style.color = theme.colors.error.main;
+          }
+        }}
+        onMouseLeave={(e) => {
+          if (!loading && !isLiked) {
+            e.target.style.backgroundColor = 'transparent';
+            e.target.style.borderColor = theme.colors.neutral[300];
+            e.target.style.color = theme.colors.neutral[600];
+          }
+        }}
+      >
+        <div>
+          <FiHeart 
+            size={16} 
+            fill={isLiked ? 'currentColor' : 'none'} 
+          />
+        </div>
+        <span>{optimisticCount}</span>
+      </button>
+
+      <CyclesNotification
+        message={notificationData.message}
+        amount={notificationData.amount}
+        type={notificationData.type}
+        isVisible={showNotification}
+        onClose={() => setShowNotification(false)}
+      />
+    </>
   );
 }

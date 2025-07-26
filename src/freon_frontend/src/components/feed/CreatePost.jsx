@@ -3,12 +3,14 @@ import { freon_backend } from 'declarations/freon_backend';
 import { Principal } from '@dfinity/principal';
 import { useAuth } from '../../context/AuthContext';
 import ImageUpload from '../common/ImageUpload';
+import CyclesNotification from '../cycles/CyclesNotification';
 
 export default function CreatePost({ onPostCreated }) {
   const { principal, error, setError } = useAuth();
   const [postContent, setPostContent] = useState('');
   const [postImage, setPostImage] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showNotification, setShowNotification] = useState(false);
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -22,6 +24,10 @@ export default function CreatePost({ onPostCreated }) {
       if (ok) {
         setPostContent('');
         setPostImage('');
+        
+        // Show cycles notification for creating a post
+        setShowNotification(true);
+        
         if (onPostCreated) {
           onPostCreated(); // Notify parent component to refresh
         }
@@ -87,39 +93,49 @@ export default function CreatePost({ onPostCreated }) {
   };
 
   return (
-    <div style={containerStyle}>
-      <h3 style={titleStyle}>What's on your mind?</h3>
+    <>
+      <div style={containerStyle}>
+        <h3 style={titleStyle}>What's on your mind?</h3>
 
-      <form onSubmit={handleSubmit} style={formStyle}>
-        <textarea
-          placeholder="Share your thoughts with the community..."
-          value={postContent}
-          onChange={(e) => setPostContent(e.target.value)}
-          maxLength={280}
-          style={textareaStyle}
-        />
-
-        <div style={{ marginBottom: "1rem" }}>
-          <ImageUpload
-            currentImage={postImage}
-            onImageChange={setPostImage}
-            placeholder=""
-            size={120}
-            label="Add Image"
+        <form onSubmit={handleSubmit} style={formStyle}>
+          <textarea
+            placeholder="Share your thoughts with the community..."
+            value={postContent}
+            onChange={(e) => setPostContent(e.target.value)}
+            maxLength={280}
+            style={textareaStyle}
           />
-        </div>
-        <span style={counterStyle}>{postContent.length}/280 characters</span>
 
-        <div style={footerStyle}>
-          <button
-            type="submit"
-            disabled={loading || !postContent.trim()}
-            style={buttonStyle}
-          >
-            {loading ? "Posting..." : "Post"}
-          </button>
-        </div>
-      </form>
-    </div>
+          <div style={{ marginBottom: "1rem" }}>
+            <ImageUpload
+              currentImage={postImage}
+              onImageChange={setPostImage}
+              placeholder=""
+              size={120}
+              label="Add Image"
+            />
+          </div>
+          <span style={counterStyle}>{postContent.length}/280 characters</span>
+
+          <div style={footerStyle}>
+            <button
+              type="submit"
+              disabled={loading || !postContent.trim()}
+              style={buttonStyle}
+            >
+              {loading ? "Posting..." : "Post"}
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <CyclesNotification
+        message="You earned cycles for posting!"
+        amount={10}
+        type="earned"
+        isVisible={showNotification}
+        onClose={() => setShowNotification(false)}
+      />
+    </>
   );
 }

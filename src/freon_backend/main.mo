@@ -5,6 +5,8 @@ import Iter "mo:base/Iter";
 import Buffer "mo:base/Buffer";
 import Option "mo:base/Option";
 import Array "mo:base/Array";
+import Cycles "mo:base/ExperimentalCycles";
+import Nat "mo:base/Nat";
 
 actor class() {
   let Array_ = Array;
@@ -33,6 +35,7 @@ actor class() {
     bio: Text;
     image_url: Text;
     created_at: Time.Time;
+    cycles_balance: Nat;
   };
   
   type Post = {
@@ -99,6 +102,7 @@ actor class() {
         bio = bio;
         image_url = image_url;
         created_at = Time.now();
+        cycles_balance = 1000; // Starting balance
       };
       users.put(caller, profile);
       return true;
@@ -115,6 +119,7 @@ actor class() {
           bio = bio;
           image_url = image_url;
           created_at = profile.created_at;
+          cycles_balance = profile.cycles_balance;
         };
         users.put(caller, updated);
         return true;
@@ -189,6 +194,10 @@ actor class() {
     };
     posts := Array_.append<Post>(posts, [newPost]);
     postId := postId + 1;
+    
+    // Award 10 cycles to the user for creating a post
+    let _ = await award_cycles(caller, 10);
+    
     return true;
   };
 
@@ -232,6 +241,10 @@ actor class() {
           comments_count = post.comments_count;
         };
         posts := updatePostInArray(posts, index, updatedPost);
+        
+        // Award 5 cycles to the post author for receiving a like
+        let _ = await award_cycles(post.author, 5);
+        
         return true;
       };
     };
@@ -377,6 +390,93 @@ actor class() {
     };
   };
 
+  // ========== CYCLES MANAGEMENT ==========
+  
+  // Get user's cycles balance
+  public query func get_cycles_balance(p: Principal) : async Nat {
+    switch (users.get(p)) {
+      case null { 0; };
+      case (?profile) { profile.cycles_balance; };
+    };
+  };
+
+  // Award cycles for activity (likes received, posts, etc.)
+  public func award_cycles(p: Principal, amount: Nat) : async Bool {
+    switch (users.get(p)) {
+      case null { false; };
+      case (?profile) {
+        let updated : UserProfile = {
+          username = profile.username;
+          bio = profile.bio;
+          image_url = profile.image_url;
+          created_at = profile.created_at;
+          cycles_balance = profile.cycles_balance + amount;
+        };
+        users.put(p, updated);
+        true;
+      };
+    };
+  };
+
+  // Spend cycles for premium features
+  public func spend_cycles(p: Principal, amount: Nat) : async Bool {
+    switch (users.get(p)) {
+      case null { false; };
+      case (?profile) {
+        if (profile.cycles_balance >= amount) {
+          let updated : UserProfile = {
+            username = profile.username;
+            bio = profile.bio;
+            image_url = profile.image_url;
+            created_at = profile.created_at;
+            cycles_balance = profile.cycles_balance - amount;
+          };
+          users.put(p, updated);
+          true;
+        } else {
+          false;
+        };
+      };
+    };
+  };
+
+  // Transfer cycles between users
+  public func transfer_cycles(from: Principal, to: Principal, amount: Nat) : async Bool {
+    if (from == to) { return false; };
+    
+    switch (users.get(from), users.get(to)) {
+      case (?fromProfile, ?toProfile) {
+        if (fromProfile.cycles_balance >= amount) {
+          let updatedFrom : UserProfile = {
+            username = fromProfile.username;
+            bio = fromProfile.bio;
+            image_url = fromProfile.image_url;
+            created_at = fromProfile.created_at;
+            cycles_balance = fromProfile.cycles_balance - amount;
+          };
+          let updatedTo : UserProfile = {
+            username = toProfile.username;
+            bio = toProfile.bio;
+            image_url = toProfile.image_url;
+            created_at = toProfile.created_at;
+            cycles_balance = toProfile.cycles_balance + amount;
+          };
+          users.put(from, updatedFrom);
+          users.put(to, updatedTo);
+          true;
+        } else {
+          false;
+        };
+      };
+      case _ { false; };
+    };
+  };
+
+  // Get canister cycles balance (read-only for display)
+  public query func get_canister_cycles() : async Nat {
+    Cycles.balance()
+  };
+
   // ========== NOTIFICATIONS SYSTEM ==========
   
   // Insert dummy users for development
@@ -387,18 +487,21 @@ actor class() {
       bio = "I love Motoko!";
       image_url = "https://api.dicebear.com/7.x/pixel-art/svg?seed=alice";
       created_at = now;
+      cycles_balance = 1500;
     };
     let dummy2 = {
       username = "bob";
       bio = "DFINITY enthusiast.";
       image_url = "https://api.dicebear.com/7.x/pixel-art/svg?seed=bob";
       created_at = now;
+      cycles_balance = 2000;
     };
     let dummy3 = {
       username = "carol";
       bio = "Open web advocate.";
       image_url = "https://api.dicebear.com/7.x/pixel-art/svg?seed=carol";
       created_at = now;
+      cycles_balance = 750;
     };
     let p1 = Principal.fromText("anlbb-mrnr5-ic4zz-vppjt-ruov7-mlrou-vkgbn-widdx-2lzty-b7ncy-gqe");
     let p2 = Principal.fromText("anlbb-mrnr5-ic4zz-vppjt-ruov7-mlrou-vkgbn-widdx-2lzty-b7ncy-gqe");

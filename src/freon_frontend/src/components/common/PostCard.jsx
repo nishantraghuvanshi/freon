@@ -82,20 +82,17 @@ export default function PostCard({ post, onPostUpdate }) {
           showPlaceholder={true}
         />
         <div className="flex-1">
-          <div className="font-semibold text-gray-900 text-base">
+          <div className="font-light text-gray-900 text-xs">
             {author?.username || 'Unknown User'}
           </div>
-          <div className="text-sm text-gray-500">
+          <div className="text-xs text-gray-500">
             {formatTimestamp(currentPost.timestamp)}
           </div>
         </div>
-        <button className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
-          <FiMoreVertical size={16} />
-        </button>
       </div>
 
       {/* Post Content */}
-      <div className="mb-6 text-gray-900 leading-relaxed text-base">
+      <div className="mb-6 text-black leading-relaxed text-base">
         {currentPost.content}
       </div>
       

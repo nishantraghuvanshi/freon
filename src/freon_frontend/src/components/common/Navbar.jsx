@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { FiMenu, FiX, FiHome, FiEdit3, FiUser, FiLogOut } from 'react-icons/fi';
 import Avatar from './Avatar';
+import CyclesDisplay from '../cycles/CyclesDisplay';
 import { theme } from '../../styles/theme';
 
 export default function Navbar() {
@@ -178,6 +179,7 @@ export default function Navbar() {
           
           {profile && (
             <div style={profileSectionStyle}>
+              <CyclesDisplay />
               <Avatar 
                 src={profile.image_url}
                 alt={`${profile.username}'s avatar`}
